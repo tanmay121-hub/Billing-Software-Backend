@@ -1,6 +1,6 @@
 package com.learn.billingsoftware.dto;
 
-public class InvoiceResponseDTO {
+public class InvoiceItemRequestDTO {
     private Long productId;
     private Integer quantity;
 
