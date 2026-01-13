@@ -1,11 +1,11 @@
 package com.learn.billingsoftware.entity;
 
-public class Product {
-    private Long id;
-    private String name;
-    private Double price;
-    private Double gstPercentage;
-    private Integer stockQuantity;
+    public class Product {
+        private Long id;
+        private String name;
+        private Double price;
+        private Double gstPercentage;
+        private Integer stockQuantity;
 
     public Product() {}        //empty const
 
