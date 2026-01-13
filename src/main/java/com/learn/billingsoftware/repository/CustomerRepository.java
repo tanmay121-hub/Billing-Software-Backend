@@ -1,49 +1,80 @@
 package com.learn.billingsoftware.repository;
 
 import com.learn.billingsoftware.entity.Customer;
-import com.learn.billingsoftware.entity.Product;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
+
 @Repository
 public class CustomerRepository {
 
-    private final List<Customer> list = new ArrayList<>();
+    private final JdbcTemplate jdbcTemplate;
 
-    private Long idCounter = 1L;
-    // add
-    public Customer addCustomer(Customer customer){
-        customer.setId(idCounter++);
-        list.add(customer);
+    // Constructor Injection
+    public CustomerRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    // 1. ADD (Create)
+    public Customer addCustomer(Customer customer) {
+        String sql = "INSERT INTO customer (name, address, email, phone) VALUES (?, ?, ?, ?)";
+
+        // Execute update
+        jdbcTemplate.update(sql,
+                customer.getName(),
+                customer.getAddress(),
+                customer.getEmail(),
+                customer.getPhone());
+
+
         return customer;
     }
 
-    // find by id
-    public Customer findById(Long id){
-        return list.stream()
-                .filter(c -> c.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+    // 2. FIND BY ID (Read)
+    public Customer findById(Long id) {
+        String sql = "SELECT * FROM customer WHERE id = ?";
+
+
+        List<Customer> result = jdbcTemplate.query(sql, this::mapRowToCustomer, id);
+
+        return result.isEmpty() ? null : result.get(0);
     }
 
-    // get customer list
-    public List<Customer> findAll(){
-        return list;
+    // 3. GET ALL (Read)
+    public List<Customer> findAll() {
+        String sql = "SELECT * FROM customer";
+        return jdbcTemplate.query(sql, this::mapRowToCustomer);
     }
-    // update
-    public Customer updateCustomer(Long id,String address,String email, String phone ){
-        Customer existingCustomer = findById(id);
-        if (existingCustomer != null){
-            existingCustomer.setAddress(address);
-            existingCustomer.setEmail(email);
-            existingCustomer.setPhone(phone);
+
+    // 4. UPDATE
+    public Customer updateCustomer(Long id, String address, String email, String phone) {
+        String sql = "UPDATE customer SET address = ?, email = ?, phone = ? WHERE id = ?";
+
+        int rowsAffected = jdbcTemplate.update(sql, address, email, phone, id);
+
+        if (rowsAffected > 0) {
+            return findById(id); // Fetch the updated record
         }
-        return existingCustomer;
+        return null;
     }
 
-    // delete
+    // 5. DELETE
     public void deleteById(Long id) {
-        list.removeIf(p -> p.getId().equals(id));
+        String sql = "DELETE FROM customer WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+
+
+
+    private Customer mapRowToCustomer(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
+        Customer customer = new Customer();
+        customer.setId(rs.getLong("id"));
+        customer.setName(rs.getString("name"));
+        customer.setAddress(rs.getString("address"));
+        customer.setEmail(rs.getString("email"));
+        customer.setPhone(rs.getString("phone"));
+        return customer;
     }
 }

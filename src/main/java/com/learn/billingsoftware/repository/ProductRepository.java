@@ -1,45 +1,76 @@
 package com.learn.billingsoftware.repository;
 
 import com.learn.billingsoftware.entity.Product;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository
 public class ProductRepository {
 
-    private  final ArrayList<Product> list = new ArrayList<>();
+    private final JdbcTemplate jdbcTemplate;
 
-    // add
-    private Long idCounter = 1L;
-    public Product addProduct(Product product){
-        product.setId(idCounter++);
-        list.add(product);
+    public ProductRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    // 1. ADD
+    public Product addProduct(Product product) {
+
+        String sql = "INSERT INTO product (name, price, stock_quantity) VALUES (?, ?, ?)";
+
+        jdbcTemplate.update(sql,
+                product.getName(),
+                product.getPrice(),
+                product.getStockQuantity());
+
         return product;
     }
 
-    // find by id
-    public Product findById(Long id){
-        return list.stream().filter(product1 -> product1.getId().equals(id) ).findFirst().orElse(null);
+    // 2. FIND BY ID
+    public Product findById(Long id) {
+        String sql = "SELECT * FROM product WHERE id = ?";
+
+        List<Product> result = jdbcTemplate.query(sql, this::mapRowToProduct, id);
+
+        return result.isEmpty() ? null : result.get(0);
     }
 
-    // get product list
-    public List<Product> findAll(){
-        return list;
+    // 3. FIND ALL
+    public List<Product> findAll() {
+        String sql = "SELECT * FROM product";
+        return jdbcTemplate.query(sql, this::mapRowToProduct);
     }
-    // update
-    public Product updateProduct(Long id, Double price, Integer stock){
-        Product existingProduct = findById(id);
-        if (existingProduct != null){
-            existingProduct.setPrice(price);
-            existingProduct.setStockQuantity(stock);
+
+    // 4. UPDATE
+    // Updates only price and stock based on your previous logic
+    public Product updateProduct(Long id, Double price, Integer stock) {
+        String sql = "UPDATE product SET price = ?, stock_quantity = ? WHERE id = ?";
+
+        int rowsAffected = jdbcTemplate.update(sql, price, stock, id);
+
+        if (rowsAffected > 0) {
+            return findById(id); // Return the updated object from DB
         }
-        return existingProduct;
+        return null;
     }
 
-    // delete
+    // 5. DELETE
     public void deleteById(Long id) {
-        list.removeIf(p -> p.getId().equals(id));
+        String sql = "DELETE FROM product WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+
+    // --- Helper: RowMapper ---
+    // Maps SQL columns to the Java Product object
+    private Product mapRowToProduct(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
+        Product product = new Product();
+        product.setId(rs.getLong("id"));
+        product.setName(rs.getString("name"));
+        product.setPrice(rs.getDouble("price"));
+        // Make sure the column name matches your DB (e.g., 'stock_quantity' or 'stock')
+        product.setStockQuantity(rs.getInt("stock_quantity"));
+        return product;
     }
 }
