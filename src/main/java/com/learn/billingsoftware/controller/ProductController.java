@@ -1,15 +1,14 @@
 package com.learn.billingsoftware.controller;
 
-
 import com.learn.billingsoftware.entity.Product;
 import com.learn.billingsoftware.service.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("/products")
+@CrossOrigin(origins = "*")
 public class ProductController {
 
     private final ProductService service;
@@ -20,7 +19,7 @@ public class ProductController {
 
     @PostMapping("/add")
     public Product addProduct(@RequestBody Product product) {
-        return service.addproduct(product);
+        return service.addProduct(product);
     }
 
     @GetMapping
@@ -34,7 +33,10 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public Product updateProduct(@PathVariable Long id,@RequestParam Double price,@RequestParam Integer stock) {
+    public Product updateProduct(
+            @PathVariable Long id,
+            @RequestParam(required = false) Double price,
+            @RequestParam(required = false) Integer stock) {
         return service.updateProduct(id, price, stock);
     }
 
