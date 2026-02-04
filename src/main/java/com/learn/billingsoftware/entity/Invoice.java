@@ -1,81 +1,30 @@
 package com.learn.billingsoftware.entity;
 
+import jakarta.persistence.*;
+import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Entity
+@Data
 public class Invoice {
-    private Long invoiceId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private LocalDateTime invoiceDate;
+
+    // Relationship: Many Invoices belong to One Customer
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
     private Customer customer;
-    private Double totalAmount; // before task
+
+    private Double totalAmount;
     private Double totalTax;
     private Double discount;
     private Double finalAmount;
+
+    // Relationship: One Invoice has Many Items
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
     private List<InvoiceItem> items;
-
-    public Invoice() {}
-
-    public Long getInvoiceId() {
-        return invoiceId;
-    }
-
-    public void setInvoiceId(Long invoiceId) {
-        this.invoiceId = invoiceId;
-    }
-
-    public LocalDateTime getInvoiceDate() {
-        return invoiceDate;
-    }
-
-    public void setInvoiceDate(LocalDateTime invoiceDate) {
-        this.invoiceDate = invoiceDate;
-    }
-
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
-    }
-
-    public Double getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(Double totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
-    public Double getTotalTax() {
-        return totalTax;
-    }
-
-    public void setTotalTax(Double totalTax) {
-        this.totalTax = totalTax;
-    }
-
-    public Double getDiscount() {
-        return discount;
-    }
-
-    public void setDiscount(Double discount) {
-        this.discount = discount;
-    }
-
-    public Double getFinalAmount() {
-        return finalAmount;
-    }
-
-    public void setFinalAmount(Double finalAmount) {
-        this.finalAmount = finalAmount;
-    }
-
-    public List<InvoiceItem> getItems() {
-        return items;
-    }
-
-    public void setItems(List<InvoiceItem> items) {
-        this.items = items;
-    }
 }

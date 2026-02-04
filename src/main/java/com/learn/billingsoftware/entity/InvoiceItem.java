@@ -1,69 +1,28 @@
 package com.learn.billingsoftware.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import lombok.Data;
+
+@Entity
+@Data
 public class InvoiceItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id")
     private Product product;
+
+    // Link back to the Invoice
+    @ManyToOne
+    @JoinColumn(name = "invoice_id")
+    @JsonIgnore // Stop infinite recursion when printing JSON
+    private Invoice invoice;
+
     private Integer quantity;
     private Double price;
     private Double taxAmount;
     private Double total;
-
-    public InvoiceItem() {}
-
-    public InvoiceItem(Long id, Product product, Integer quantity, Double price, Double taxAmount, Double total) {
-        this.id = id;
-        this.product = product;
-        this.quantity = quantity;
-        this.price = price;
-        this.taxAmount = taxAmount;
-        this.total = total;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-
-    public Double getTaxAmount() {
-        return taxAmount;
-    }
-
-    public void setTaxAmount(Double taxAmount) {
-        this.taxAmount = taxAmount;
-    }
-
-    public Double getTotal() {
-        return total;
-    }
-
-    public void setTotal(Double total) {
-        this.total = total;
-    }
 }

@@ -3,11 +3,11 @@ package com.learn.billingsoftware.controller;
 import com.learn.billingsoftware.entity.Customer;
 import com.learn.billingsoftware.service.CustomerService;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("/customers")
+@CrossOrigin(origins = "*")
 public class CustomerController {
 
     private final CustomerService service;
@@ -18,8 +18,7 @@ public class CustomerController {
 
     @PostMapping
     public Customer addCustomer(@RequestBody Customer customer) {
-        service.addCustomer(customer);
-        return customer;
+        return service.addCustomer(customer);
     }
 
     @GetMapping
@@ -35,9 +34,9 @@ public class CustomerController {
     @PutMapping("/{id}")
     public Customer updateCustomer(
             @PathVariable Long id,
-            @RequestParam String address,
-            @RequestParam String email,
-            @RequestParam String phone
+            @RequestParam(required = false) String address,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String phone
     ) {
         return service.updateCustomer(id, address, email, phone);
     }
