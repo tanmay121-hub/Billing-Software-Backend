@@ -2,6 +2,7 @@ package com.learn.billingsoftware.controller;
 
 import com.learn.billingsoftware.dto.InvoiceRequestDTO;
 import com.learn.billingsoftware.entity.Invoice;
+import com.learn.billingsoftware.service.EmailService;
 import com.learn.billingsoftware.service.InvoiceService;
 import com.learn.billingsoftware.service.PdfService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class InvoiceController {
 
     private final InvoiceService invoiceService;
     private final PdfService pdfService;
+    private final EmailService emailService;
 
     @PostMapping
     public Invoice generateInvoice(@RequestBody InvoiceRequestDTO request) {
@@ -59,5 +61,29 @@ public class InvoiceController {
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(new InputStreamResource(pdf));
+    }
+
+    @PostMapping("/{id}/email")
+    public ResponseEntity<String> emailInvoice(@PathVariable Long id) {
+        Invoice invoice = invoiceService.getInvoiceById(id);
+        String customerEmail = invoice.getCustomer().getEmail();
+
+        if (customerEmail == null || customerEmail.isEmpty()) {
+            return ResponseEntity.badRequest().body("Customer does not have an email address.");
+        }
+
+        // Generate PDF in memory
+        ByteArrayInputStream pdf = pdfService.generateInvoicePdf(invoice);
+
+        // Send Email
+        emailService.sendEmailWithAttachment(
+                customerEmail,
+                "Invoice #" + invoice.getId(),
+                "Dear " + invoice.getCustomer().getName() + ",\n\nPlease find attached your invoice.\n\nThank you!",
+                pdf,
+                "Invoice_" + id + ".pdf"
+        );
+
+        return ResponseEntity.ok("Email sent successfully to " + customerEmail);
     }
 }
